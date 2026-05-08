@@ -3,6 +3,32 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { isDemo } from "@/core/edition";
 
+const workspaceCache = new Map<string, { status: string; expiresAt: number }>();
+const CACHE_TTL = 60_000; // 60 seconds
+
+async function resolveWorkspace(subdomain: string) {
+    const cached = workspaceCache.get(subdomain);
+    if (cached && Date.now() < cached.expiresAt) return cached;
+    
+    try {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || `http://127.0.0.1:${process.env.PORT || "3000"}`;
+        const url = new URL(`/api/internal/workspace/${subdomain}`, appUrl);
+        const res = await fetch(url.toString(), {
+            headers: { "User-Agent": "WorldWideView-Middleware" }
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            workspaceCache.set(subdomain, { ...data, expiresAt: Date.now() + CACHE_TTL });
+            return data;
+        }
+        return null;
+    } catch (e) {
+        console.error("[proxy.ts] Workspace resolution failed:", e);
+        return null;
+    }
+}
+
 /**
  * Route protection proxy.
  * - /setup, /login, /api/* → public
@@ -16,7 +42,9 @@ export default async function proxy(req: NextRequest) {
     // Extract subdomain if on cloud
     const hostname = req.headers.get("host") || "";
     let tenantSubdomain = null;
-    if (process.env.NEXT_PUBLIC_WWV_EDITION === "cloud") {
+    const isCloudDeploy = process.env.NEXT_PUBLIC_WWV_EDITION === "cloud";
+    
+    if (isCloudDeploy) {
         const isApp = hostname.includes(".app.worldwideview.dev") || hostname.includes(".localhost");
         if (isApp) {
             const subdomain = hostname.replace(".app.worldwideview.dev", "").replace(".localhost", "").split(":")[0];
@@ -46,11 +74,33 @@ export default async function proxy(req: NextRequest) {
         return res;
     }
 
+    // Tenant validation
+    if (isCloudDeploy && tenantSubdomain) {
+        const workspaceInfo = await resolveWorkspace(tenantSubdomain);
+        if (!workspaceInfo) {
+            // Workspace not found
+            return new NextResponse("Workspace not found", { status: 404 });
+        }
+        if (workspaceInfo.status === "suspended" && !path.startsWith("/suspended")) {
+            return NextResponse.redirect(new URL("/suspended", req.url));
+        }
+    }
+
+
+
     // Auth pages — always accessible
     if (path.startsWith("/setup") || path.startsWith("/login")) {
         const res = NextResponse.next();
         if (tenantSubdomain) res.headers.set("x-tenant-subdomain", tenantSubdomain);
         return res;
+    }
+
+    // Root Domain (Control Plane) Routing
+    if (isCloudDeploy && !tenantSubdomain) {
+        // Redirect apex app domain to the external marketing/hub site
+        if (path === "/" || path === "/register" || path === "/dashboard" || path === "/create-workspace") {
+            return NextResponse.redirect("https://worldwideview.dev/hub");
+        }
     }
 
     // Check JWT session from Auth.js cookie

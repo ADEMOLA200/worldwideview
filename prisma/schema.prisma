@@ -19,6 +19,7 @@ model User {
   role           String     @default("user")
   createdAt      DateTime   @default(now())
   favorites      Favorite[]
+  memberships    WorkspaceMember[]
 
   @@unique([tenantId, email])
   @@map("users")
@@ -81,4 +82,35 @@ model Setting {
 
   @@unique([tenantId, key])
   @@map("settings")
+}
+
+// NEW — Global workspace registry
+model Workspace {
+  id                   String             @id @default(uuid())
+  name                 String
+  subdomain            String             @unique
+  status               String             @default("trialing")
+  plan                 String             @default("basic")
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  members              WorkspaceMember[]
+
+  @@map("workspaces")
+}
+
+// NEW — Links global users to workspaces with roles
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  userId      String
+  workspaceId String
+  role        String    @default("member")
+  joinedAt    DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_members")
 }

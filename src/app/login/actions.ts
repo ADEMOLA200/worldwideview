@@ -14,10 +14,13 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    if (isCloud) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const isDummyUrl = !supabaseUrl || supabaseUrl.includes("dummy") || supabaseUrl.includes("xyz.supabase.co");
+
+    if (isCloud && !isDummyUrl) {
         // Use Supabase GoTrue
         const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            supabaseUrl,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         );
         const { error } = await supabase.auth.signInWithPassword({
