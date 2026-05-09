@@ -245,7 +245,7 @@ Secrets go in `.env.local` (gitignored). Non-secrets go in `.env` (committed).
 ```bash
 pnpm install          # Install all workspace dependencies
 pnpm run setup        # Generate .env.local with AUTH_SECRET (first-time setup)
-pnpm dev              # Next.js frontend only (auto-runs prisma migrate deploy + copy-cesium)
+pnpm dev              # Next.js frontend only (auto-runs prisma db push + copy-cesium)
 pnpm dev:all          # Frontend + wwv-data-engine concurrently (normal development)
 pnpm dev:backends     # Run only the data engine in dev mode
 pnpm build            # Production build

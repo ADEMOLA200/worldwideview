@@ -12,7 +12,7 @@
     max-width: 420px;
     background: var(--bg-secondary, #13131a);
     border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
-    border-radius: 12px;
+    border-radius: 0px;
     padding: 2.5rem 2rem;
     text-align: center;
 }
@@ -21,7 +21,7 @@
     width: 48px;
     height: 48px;
     margin: 0 auto 1rem;
-    border-radius: 10px;
+    border-radius: 0px;
     background: rgb(var(--accent-rgb, 200, 30, 30));
     color: #fff;
     font-weight: 700;
@@ -63,7 +63,7 @@
     padding: 0.6rem 0.75rem;
     background: var(--bg-primary, #0a0a0f);
     border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.08));
-    border-radius: 8px;
+    border-radius: 0px;
     color: var(--text-primary, #e5e5e5);
     font-size: 0.9rem;
     outline: none;
@@ -86,7 +86,7 @@
     background: rgb(var(--accent-rgb, 200, 30, 30));
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 0px;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
@@ -95,3 +95,28 @@
 
 .button:hover { opacity: 0.9; }
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.legacyNotice {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(255, 191, 0, 0.05);
+    border: 1px solid rgba(255, 191, 0, 0.3);
+    text-align: left;
+    font-size: 0.8rem;
+    color: #ffbf00;
+}
+
+.legacyNotice strong {
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.legacyNotice code {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: #000;
+    color: #0f0;
+    font-family: 'JetBrains Mono', monospace;
+    word-break: break-all;
+}

@@ -33,6 +33,13 @@ export default function SetupPage() {
                 <h1 className={styles.title}>Welcome to WorldWideView</h1>
                 <p className={styles.subtitle}>Create your admin account to get started</p>
 
+                {/* Legacy Data Detection Banner */}
+                <div className={styles.legacyNotice}>
+                    <strong>💡 Upgrading from an older version?</strong>
+                    <p>We've detected legacy SQLite data. Once your new Postgres database is connected, you can import your favorites by running the migration command in your terminal.</p>
+                    <code>docker exec -it wwv_app node scripts/migrate-legacy.mjs</code>
+                </div>
+
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <label className={styles.label} htmlFor="name">
                         Display Name

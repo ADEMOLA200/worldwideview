@@ -8,7 +8,7 @@ RUN find . -type f \! -name 'package.json' \! -name 'pnpm-workspace.yaml' \! -na
 # Stage 1: Install ALL dependencies (needed for build)
 FROM node:22-alpine AS deps
 RUN npm install -g pnpm@9.15.0
-# python3/make/g++ no longer needed — removed better-sqlite3 native compilation
+
 WORKDIR /app
 # Copy only the extracted package.jsons
 COPY --from=extractor /app ./
@@ -77,13 +77,10 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/scripts/https-proxy.mjs ./scripts/https-proxy.mjs
 
-
 # Entrypoint: migrate DB on first run, then start server
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN sed -i 's/\r$//' ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
-
-
 
 EXPOSE 3000 3001
 
